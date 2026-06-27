@@ -136,3 +136,19 @@ Flow** panel on the project page (generate/regenerate/upload/edit).
   behind the same `crawlSite` interface.
 - Heuristic fallback is intentionally basic; set `ANTHROPIC_API_KEY` for
   accurate, fully-structured knowledge bases.
+
+## Deploy to Vercel
+
+1. **Import the repo** at [vercel.com/new](https://vercel.com/new) → select
+   `mio-ai-onboarding`. Framework auto-detects as Next.js. Root directory: `./`.
+2. **Add a database**: in the new project → **Storage** tab → **Create
+   Database** → **Postgres** → connect it. This creates `POSTGRES_*` env vars.
+3. **Set environment variables** (Project → Settings → Environment Variables):
+   - `DATABASE_URL` — paste the value of `POSTGRES_PRISMA_URL` (pooled).
+   - `AUTH_SECRET` — a long random string (used to sign customer sessions).
+   - `ANTHROPIC_API_KEY` — *(optional)* enables LLM scraping; omit for heuristics.
+4. **Deploy**. The build runs `prisma db push` to create tables automatically.
+5. Open the deployment URL → the Ops console. Create a project, generate a
+   customer onboarding link, and share that `/onboard/<token>` URL with users.
+
+Onboarding links auto-use the deployment host (no `APP_URL` needed).
