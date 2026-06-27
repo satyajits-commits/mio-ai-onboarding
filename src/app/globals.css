@@ -1,0 +1,61 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --radius: 0.875rem;
+
+    /* Light theme (default) — Mio */
+    --background: 222 100% 99%;
+    --foreground: 222 47% 11%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+    --muted: 220 30% 96%;
+    --muted-foreground: 215 18% 47%;
+    --primary: 221 83% 53%;
+    --primary-foreground: 0 0% 100%;
+    --border: 220 24% 90%;
+    --input: 220 24% 90%;
+    --ring: 221 83% 53%;
+  }
+
+  .dark {
+    --background: 224 47% 8%;
+    --foreground: 210 40% 96%;
+    --card: 223 44% 12%;
+    --card-foreground: 210 40% 96%;
+    --muted: 223 30% 18%;
+    --muted-foreground: 215 20% 65%;
+    --primary: 217 91% 60%;
+    --primary-foreground: 222 47% 11%;
+    --border: 223 30% 22%;
+    --input: 223 30% 24%;
+    --ring: 217 91% 60%;
+  }
+
+  * {
+    border-color: hsl(var(--border));
+  }
+
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    -webkit-font-smoothing: antialiased;
+  }
+}
+
+/* Subtle dotted grid backdrop used on hero/landing surfaces. */
+.bg-grid {
+  background-image: radial-gradient(
+    hsl(var(--primary) / 0.12) 1px,
+    transparent 1px
+  );
+  background-size: 22px 22px;
+}
+
+.glass {
+  background: hsl(var(--card) / 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}

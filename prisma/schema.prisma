@@ -1,0 +1,107 @@
+// Prisma schema — PostgreSQL (works on Vercel + any hosted Postgres).
+// Set DATABASE_URL to your Postgres connection string (use the pooled
+// "Prisma" URL on Vercel Postgres). Models are portable.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// An onboarding project created by the Operations Team for one institution.
+model Project {
+  id        String   @id @default(cuid())
+  name      String
+  url       String
+  // pending | scraping | structuring | completed | failed
+  status    String   @default("pending")
+  error     String?
+
+  // Phase 1 raw scrape output (JSON string: array of {url, title, text})
+  rawPages  String?
+  // Phase 2 structured knowledge base (JSON string matching KnowledgeBase type)
+  knowledgeBase String?
+  // Whether the KB was produced by the LLM ("llm") or heuristics ("heuristic")
+  kbSource  String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  onboardingLink     OnboardingLink?
+  qualificationFlow  QualificationFlow?
+}
+
+// Phase 3 — the lead qualification flow parsed from the prerequisites workbook.
+model QualificationFlow {
+  id        String   @id @default(cuid())
+  projectId String   @unique
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  config    String   // JSON string matching QualificationFlow type
+  source    String   @default("imported") // imported | edited
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Phase 4 — a secured customer onboarding link (one per project).
+model OnboardingLink {
+  id           String  @id @default(cuid())
+  projectId    String  @unique
+  project      Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  token        String  @unique // used in the public URL /onboard/<token>
+  email        String
+  passwordHash String
+
+  progress     Int      @default(0) // 0..100, Phase 7 progress tracking
+  state        String?            // JSON of onboarding answers (Phase 7)
+  status       String   @default("invited") // invited | in_progress | completed
+
+  credentialsSentAt DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  logins    LoginEvent[]
+  sessions  SessionEvent[]
+  responses QualificationResponse[]
+}
+
+// Phase 3/7 — a customer's captured qualification answers.
+model QualificationResponse {
+  id        String         @id @default(cuid())
+  linkId    String
+  link      OnboardingLink @relation(fields: [linkId], references: [id], onDelete: Cascade)
+  answers   String         // JSON string of QualificationAnswers
+  complete  Boolean        @default(false)
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+}
+
+// Phase 4 — login history.
+model LoginEvent {
+  id        String         @id @default(cuid())
+  linkId    String
+  link      OnboardingLink @relation(fields: [linkId], references: [id], onDelete: Cascade)
+  success   Boolean
+  createdAt DateTime       @default(now())
+}
+
+// Phase 4 — session history (start / resume / heartbeat / complete).
+model SessionEvent {
+  id        String         @id @default(cuid())
+  linkId    String
+  link      OnboardingLink @relation(fields: [linkId], references: [id], onDelete: Cascade)
+  kind      String
+  createdAt DateTime       @default(now())
+}
+
+// Stub email outbox — used when no SMTP is configured (dev/demo).
+model EmailOutbox {
+  id      String   @id @default(cuid())
+  to      String
+  subject String
+  body    String
+  sentAt  DateTime @default(now())
+}
