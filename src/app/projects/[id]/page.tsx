@@ -198,6 +198,13 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
             </div>
           )}
 
+        </>
+      )}
+
+      {/* Qualification + onboarding link are available on any terminal state —
+          even if scraping failed, the customer flow runs on default config. */}
+      {TERMINAL.has(project.status) && (
+        <>
           <QualificationPanel projectId={project.id} />
           <OnboardingPanel projectId={project.id} />
         </>
